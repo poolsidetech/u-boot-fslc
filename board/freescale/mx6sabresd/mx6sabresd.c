@@ -50,11 +50,16 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm | PAD_CTL_HYS |	\
 	PAD_CTL_ODE | PAD_CTL_SRE_FAST)
 
-#define I2C_PMIC	1
+/*
+ * D98 has the power management chip (PMIC) on a different
+ * i2c bus (I2C-3) than Sabre SD Demo Board
+ */
+#define I2C_PMIC   2
 
 #define I2C_PAD MUX_PAD_CTRL(I2C_PAD_CTRL)
 
-#define DISP0_PWR_EN	IMX_GPIO_NR(1, 21)
+#define DISP0_PWR_EN	IMX_GPIO_NR(6, 14)
+#define DISP0_BLK_EN   IMX_GPIO_NR(6, 15)
 
 #define KEY_VOL_UP	IMX_GPIO_NR(1, 4)
 
@@ -76,11 +81,7 @@ static iomux_v3_cfg_t const usdhc2_pads[] = {
 	IOMUX_PADS(PAD_SD2_DAT1__SD2_DATA1	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD2_DAT2__SD2_DATA2	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD2_DAT3__SD2_DATA3	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D4__SD2_DATA4	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D5__SD2_DATA5	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D6__SD2_DATA6	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D7__SD2_DATA7	| MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D2__GPIO2_IO02	| MUX_PAD_CTRL(NO_PAD_CTRL)), /* CD */
+	/* D98 has a 4-bit MMC interface for the SD card */
 };
 
 static iomux_v3_cfg_t const usdhc3_pads[] = {
@@ -94,21 +95,10 @@ static iomux_v3_cfg_t const usdhc3_pads[] = {
 	IOMUX_PADS(PAD_SD3_DAT5__SD3_DATA5 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD3_DAT6__SD3_DATA6 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
 	IOMUX_PADS(PAD_SD3_DAT7__SD3_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_NANDF_D0__GPIO2_IO00    | MUX_PAD_CTRL(NO_PAD_CTRL)), /* CD */
+	/* D98 has eMMC @ SD3, so there is no GPIO-based card insert detection */
 };
 
-static iomux_v3_cfg_t const usdhc4_pads[] = {
-	IOMUX_PADS(PAD_SD4_CLK__SD4_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_CMD__SD4_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_DAT0__SD4_DATA0 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_DAT1__SD4_DATA1 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_DAT2__SD4_DATA2 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_DAT3__SD4_DATA3 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_DAT4__SD4_DATA4 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_DAT5__SD4_DATA5 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_DAT6__SD4_DATA6 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-	IOMUX_PADS(PAD_SD4_DAT7__SD4_DATA7 | MUX_PAD_CTRL(USDHC_PAD_CTRL)),
-};
+/* D98 doesn't have an SD4! */
 
 static iomux_v3_cfg_t const ecspi1_pads[] = {
 	IOMUX_PADS(PAD_KEY_COL0__ECSPI1_SCLK | MUX_PAD_CTRL(SPI_PAD_CTRL)),
@@ -149,15 +139,19 @@ static iomux_v3_cfg_t const rgb_pads[] = {
 	IOMUX_PADS(PAD_DISP0_DAT23__IPU1_DISP0_DATA23 | MUX_PAD_CTRL(NO_PAD_CTRL)),
 };
 
+/* D98 custom backlight pads */
 static iomux_v3_cfg_t const bl_pads[] = {
-	IOMUX_PADS(PAD_SD1_DAT3__GPIO1_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_NANDF_CS1__GPIO6_IO14 | MUX_PAD_CTRL(NO_PAD_CTRL)), // LCD_PWR_EN
+	IOMUX_PADS(PAD_NANDF_CS2__GPIO6_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL)), // LCD_BKL_EN
 };
 
 static void enable_backlight(void)
 {
 	SETUP_IOMUX_PADS(bl_pads);
 	gpio_request(DISP0_PWR_EN, "Display Power Enable");
+	gpio_request(DISP0_BLK_EN, "Display Backlight Power Enable");
 	gpio_direction_output(DISP0_PWR_EN, 1);
+	gpio_direction_output(DISP0_BLK_EN, 1);
 }
 
 static void enable_rgb(struct display_info_t const *dev)
@@ -184,16 +178,21 @@ static struct i2c_pads_info mx6q_i2c_pad_info1 = {
 	}
 };
 
+/*
+ * D98 has the power management chip (PMIC) on the 3rd I2C Bus
+ * Adjust the pads so that board_init() can enable this bus and then
+ * power_init_board() can find it.
+ */
 static struct i2c_pads_info mx6dl_i2c_pad_info1 = {
 	.scl = {
-		.i2c_mode = MX6DL_PAD_KEY_COL3__I2C2_SCL | I2C_PAD,
-		.gpio_mode = MX6DL_PAD_KEY_COL3__GPIO4_IO12 | I2C_PAD,
-		.gp = IMX_GPIO_NR(4, 12)
+		.i2c_mode = MX6DL_PAD_EIM_D17__I2C3_SCL | I2C_PAD,
+		.gpio_mode = MX6DL_PAD_EIM_D17__GPIO3_IO17 | I2C_PAD,
+		.gp = IMX_GPIO_NR(3, 17)
 	},
 	.sda = {
-		.i2c_mode = MX6DL_PAD_KEY_ROW3__I2C2_SDA | I2C_PAD,
-		.gpio_mode = MX6DL_PAD_KEY_ROW3__GPIO4_IO13 | I2C_PAD,
-		.gp = IMX_GPIO_NR(4, 13)
+		.i2c_mode = MX6DL_PAD_EIM_D18__I2C3_SDA | I2C_PAD,
+		.gpio_mode = MX6DL_PAD_EIM_D18__GPIO3_IO18 | I2C_PAD,
+		.gp = IMX_GPIO_NR(3, 18)
 	}
 };
 
@@ -217,7 +216,7 @@ static void setup_iomux_uart(void)
 struct fsl_esdhc_cfg usdhc_cfg[3] = {
 	{USDHC2_BASE_ADDR},
 	{USDHC3_BASE_ADDR},
-	{USDHC4_BASE_ADDR},
+	/* D98 does not have a USDHC4 */
 };
 
 #define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 2)
@@ -240,9 +239,7 @@ int board_mmc_getcd(struct mmc *mmc)
 	case USDHC3_BASE_ADDR:
 		ret = !gpio_get_value(USDHC3_CD_GPIO);
 		break;
-	case USDHC4_BASE_ADDR:
-		ret = 1; /* eMMC/uSDHC4 is always present */
-		break;
+	/* D98 does not have a USDHC4 */
 	}
 
 	return ret;
@@ -256,8 +253,8 @@ int board_mmc_init(bd_t *bis)
 	 * Upon reading BOOT_CFG register the following map is done:
 	 * Bit 11 and 12 of BOOT_CFG register can determine the current
 	 * mmc port
-	 * 0x1                  SD1
-	 * 0x2                  SD2
+	 * 0x1                  SD2
+	 * 0x2                  SD3
 	 * 0x3                  SD4
 	 */
 
@@ -274,12 +271,7 @@ int board_mmc_init(bd_t *bis)
 		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
 		gd->arch.sdhc_clk = usdhc_cfg[0].sdhc_clk;
 		break;
-	case 0x3:
-		SETUP_IOMUX_PADS(usdhc4_pads);
-		usdhc_cfg[0].esdhc_base = USDHC4_BASE_ADDR;
-		usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
-		gd->arch.sdhc_clk = usdhc_cfg[0].sdhc_clk;
-		break;
+	/* D98 does not have an SD4 */
 	}
 
 	return fsl_esdhc_initialize(bis, &usdhc_cfg[0]);
@@ -495,7 +487,8 @@ int board_init(void)
 	if (is_mx6dq() || is_mx6dqp())
 		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6q_i2c_pad_info1);
 	else
-		setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c_pad_info1);
+		setup_i2c(I2C_PMIC, CONFIG_SYS_I2C_SPEED, 0x7f, &mx6dl_i2c_pad_info1);
+
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
 #endif
@@ -791,57 +784,57 @@ static int mx6qp_dcd_table[] = {
 };
 
 static int mx6dl_dcd_table[] = {
-	0x020e0774, 0x000C0000,
+	0x020e0774, 0x000c0000,
 	0x020e0754, 0x00000000,
-	0x020e04ac, 0x00000030,
-	0x020e04b0, 0x00000030,
-	0x020e0464, 0x00000030,
-	0x020e0490, 0x00000030,
-	0x020e074c, 0x00000030,
-	0x020e0494, 0x00000030,
+	0x020e04ac, 0x00000028,
+	0x020e04b0, 0x00000028,
+	0x020e0464, 0x00000028,
+	0x020e0490, 0x00000028,
+	0x020e074c, 0x00000028,
+	0x020e0494, 0x00000028,
 	0x020e04a0, 0x00000000,
-	0x020e04b4, 0x00000030,
-	0x020e04b8, 0x00000030,
-	0x020e076c, 0x00000030,
+	0x020e04b4, 0x00000028,
+	0x020e04b8, 0x00000028,
+	0x020e076c, 0x00000028,
 	0x020e0750, 0x00020000,
-	0x020e04bc, 0x00000030,
-	0x020e04c0, 0x00000030,
-	0x020e04c4, 0x00000030,
-	0x020e04c8, 0x00000030,
-	0x020e04cc, 0x00000030,
-	0x020e04d0, 0x00000030,
-	0x020e04d4, 0x00000030,
-	0x020e04d8, 0x00000030,
+	0x020e04bc, 0x00000028,
+	0x020e04c0, 0x00000028,
+	0x020e04c4, 0x00000028,
+	0x020e04c8, 0x00000028,
+	0x020e04cc, 0x00000028,
+	0x020e04d0, 0x00000028,
+	0x020e04d4, 0x00000028,
+	0x020e04d8, 0x00000028,
 	0x020e0760, 0x00020000,
-	0x020e0764, 0x00000030,
-	0x020e0770, 0x00000030,
-	0x020e0778, 0x00000030,
-	0x020e077c, 0x00000030,
-	0x020e0780, 0x00000030,
-	0x020e0784, 0x00000030,
-	0x020e078c, 0x00000030,
-	0x020e0748, 0x00000030,
-	0x020e0470, 0x00000030,
-	0x020e0474, 0x00000030,
-	0x020e0478, 0x00000030,
-	0x020e047c, 0x00000030,
-	0x020e0480, 0x00000030,
-	0x020e0484, 0x00000030,
-	0x020e0488, 0x00000030,
-	0x020e048c, 0x00000030,
+	0x020e0764, 0x00000028,
+	0x020e0770, 0x00000028,
+	0x020e0778, 0x00000028,
+	0x020e077c, 0x00000028,
+	0x020e0780, 0x00000028,
+	0x020e0784, 0x00000028,
+	0x020e078c, 0x00000028,
+	0x020e0748, 0x00000028,
+	0x020e0470, 0x00000028,
+	0x020e0474, 0x00000028,
+	0x020e0478, 0x00000028,
+	0x020e047c, 0x00000028,
+	0x020e0480, 0x00000028,
+	0x020e0484, 0x00000028,
+	0x020e0488, 0x00000028,
+	0x020e048c, 0x00000028,
 	0x021b0800, 0xa1390003,
-	0x021b080c, 0x001F001F,
-	0x021b0810, 0x001F001F,
-	0x021b480c, 0x001F001F,
-	0x021b4810, 0x001F001F,
-	0x021b083c, 0x4220021F,
-	0x021b0840, 0x0207017E,
-	0x021b483c, 0x4201020C,
-	0x021b4840, 0x01660172,
-	0x021b0848, 0x4A4D4E4D,
-	0x021b4848, 0x4A4F5049,
-	0x021b0850, 0x3F3C3D31,
-	0x021b4850, 0x3238372B,
+	0x021b080c, 0x004b0048,
+	0x021b0810, 0x003e0046,
+	0x021b480c, 0x0026002b,
+	0x021b4810, 0x0025003d,
+	0x021b083c, 0x424c0248,
+	0x021b0840, 0x02340238,
+	0x021b483c, 0x422c0230,
+	0x021b4840, 0x02200228,
+	0x021b0848, 0x44444646,
+	0x021b4848, 0x42484640,
+	0x021b0850, 0x3a342c34,
+	0x021b4850, 0x3632322c,
 	0x021b081c, 0x33333333,
 	0x021b0820, 0x33333333,
 	0x021b0824, 0x33333333,
@@ -852,28 +845,44 @@ static int mx6dl_dcd_table[] = {
 	0x021b4828, 0x33333333,
 	0x021b08b8, 0x00000800,
 	0x021b48b8, 0x00000800,
-	0x021b0004, 0x0002002D,
-	0x021b0008, 0x00333030,
-	0x021b000c, 0x3F435313,
-	0x021b0010, 0xB66E8B63,
-	0x021b0014, 0x01FF00DB,
+	0x021b0004, 0x00020036,
+	0x021b0008, 0x09444040,
+	0x021b000c, 0x8a8f79a4,
+	0x021b0010, 0xdb538f64,
+	0x021b0014, 0x01ff00dd,
 	0x021b0018, 0x00001740,
 	0x021b001c, 0x00008000,
 	0x021b002c, 0x000026d2,
-	0x021b0030, 0x00431023,
-	0x021b0040, 0x00000027,
-	0x021b0000, 0x831A0000,
-	0x021b001c, 0x04008032,
+	0x021b0030, 0x008f1023,
+	0x021b0040, 0x00000047,
+	0x021b0000, 0x841a0000,
+	0x021b001c, 0x04088032,
 	0x021b001c, 0x00008033,
-	0x021b001c, 0x00048031,
-	0x021b001c, 0x05208030,
+	0x021b001c, 0x00448031,
+	0x021b001c, 0x09308030,
 	0x021b001c, 0x04008040,
-	0x021b0020, 0x00005800,
+	0x021b0020, 0x00007800,
 	0x021b0818, 0x00011117,
 	0x021b4818, 0x00011117,
-	0x021b0004, 0x0002556D,
+	0x021b0004, 0x0002556d,
 	0x021b0404, 0x00011006,
 	0x021b001c, 0x00000000,
+
+	/* set the default clock gate to save power */
+	0x020c4068, 0x00C03F3F,
+	0x020c406c, 0x0030FC03,
+	0x020c4070, 0x0FFFC000,
+	0x020c4074, 0x3FF00000,
+	0x020c4078, 0x00FFF300,
+	0x020c407c, 0x0F0000C3,
+	0x020c4080, 0x000003FF,
+
+	/* enable AXI cache for VDOA/VPU/IPU */
+	0x020e0010, 0xF00000CF,
+
+	/* set IPU AXI-id0 Qos=0xf(bypass) AXI-id1 Qos=0x7 */
+	0x020e0018, 0x007F007F,
+	0x020e001c, 0x007F007F,
 };
 
 static void ddr_init(int *table, int size)

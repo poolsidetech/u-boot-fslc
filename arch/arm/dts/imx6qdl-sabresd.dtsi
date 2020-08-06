@@ -9,7 +9,11 @@
 
 / {
 	aliases {
-		mmc1 = &usdhc3;
+		/*
+		 * The MX6 Sabre SD Demo board boots from SD card @ SD3 (udhc3)
+		 * D98 board boots from SD card @ SD2 (udhc2) or eMMC @ SD3 (udhc3)
+		 */
+		mmc1 = &usdhc2;
 	};
 
 	chosen {
@@ -299,6 +303,14 @@
 		};
 	};
 
+};
+
+&i2c3 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3>;
+	status = "okay";
+
 	pmic: pfuze100@8 {
 		compatible = "fsl,pfuze100";
 		reg = <0x08>;
@@ -399,13 +411,6 @@
 			};
 		};
 	};
-};
-
-&i2c3 {
-	clock-frequency = <100000>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c3>;
-	status = "okay";
 
 	egalax_ts@4 {
 		compatible = "eeti,egalax_ts";
@@ -413,6 +418,7 @@
 		interrupt-parent = <&gpio6>;
 		interrupts = <7 2>;
 		wakeup-gpios = <&gpio6 7 0>;
+		status = "disabled";
 	};
 };
 
@@ -502,10 +508,11 @@
 			>;
 		};
 
+		/* D98 Custom i2c Mux for i2c3 */
 		pinctrl_i2c3: i2c3grp {
 			fsl,pins = <
-				MX6QDL_PAD_GPIO_3__I2C3_SCL		0x4001b8b1
-				MX6QDL_PAD_GPIO_6__I2C3_SDA		0x4001b8b1
+				MX6QDL_PAD_EIM_D17__I2C3_SCL        0x4001b8b1
+				MX6QDL_PAD_EIM_D18__I2C3_SDA        0x4001b8b1
 			>;
 		};
 
