@@ -220,7 +220,10 @@ struct fsl_esdhc_cfg usdhc_cfg[3] = {
 };
 
 #define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 2)
-#define USDHC3_CD_GPIO	IMX_GPIO_NR(2, 0)
+/*
+ * D98 USDHC3 is eMMC, so there is no Card-Detect (CD) GPIO
+ */
+/* #define USDHC3_CD_GPIO	IMX_GPIO_NR(2, 0) */
 
 int board_mmc_get_env_dev(int devno)
 {
@@ -237,7 +240,8 @@ int board_mmc_getcd(struct mmc *mmc)
 		ret = !gpio_get_value(USDHC2_CD_GPIO);
 		break;
 	case USDHC3_BASE_ADDR:
-		ret = !gpio_get_value(USDHC3_CD_GPIO);
+		/* D98 has eMMC on SD3, no Card Detect */
+		ret = 1;
 		break;
 	/* D98 does not have a USDHC4 */
 	}

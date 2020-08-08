@@ -311,6 +311,7 @@
 	pinctrl-0 = <&pinctrl_i2c3>;
 	status = "okay";
 
+	/* D98 has the PMIC on the 3rd i2c bus */
 	pmic: pfuze100@8 {
 		compatible = "fsl,pfuze100";
 		reg = <0x08>;
@@ -585,10 +586,7 @@
 				MX6QDL_PAD_SD2_DAT1__SD2_DATA1		0x17059
 				MX6QDL_PAD_SD2_DAT2__SD2_DATA2		0x17059
 				MX6QDL_PAD_SD2_DAT3__SD2_DATA3		0x17059
-				MX6QDL_PAD_NANDF_D4__SD2_DATA4		0x17059
-				MX6QDL_PAD_NANDF_D5__SD2_DATA5		0x17059
-				MX6QDL_PAD_NANDF_D6__SD2_DATA6		0x17059
-				MX6QDL_PAD_NANDF_D7__SD2_DATA7		0x17059
+				/* D98 SD2 interface is 4-bit */
 			>;
 		};
 
@@ -712,9 +710,10 @@
 &usdhc2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2>;
-	bus-width = <8>;
+	bus-width = <4>;
 	cd-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>;
-	wp-gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>;
+	/* D98 write-protect pin (SD2_WP) is always pulled high */
+	wp-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
 
@@ -722,8 +721,8 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	bus-width = <8>;
-	cd-gpios = <&gpio2 0 GPIO_ACTIVE_LOW>;
-	wp-gpios = <&gpio2 1 GPIO_ACTIVE_HIGH>;
+	/* D98 has eMMC, not SD card in SD3 */
+	non-removable;
 	status = "okay";
 };
 
@@ -734,8 +733,11 @@
 	non-removable;
 	no-1-8-v;
 	status = "okay";
+	/* D98 has no SD4 */
+	status = "disabled";
 };
 
+/* TODO: D98 watchdog support for reboot */
 &wdog1 {
 	status = "disabled";
 };
