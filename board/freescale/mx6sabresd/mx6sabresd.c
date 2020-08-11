@@ -59,9 +59,27 @@ DECLARE_GLOBAL_DATA_PTR;
 #define I2C_PAD MUX_PAD_CTRL(I2C_PAD_CTRL)
 
 #define DISP0_PWR_EN	IMX_GPIO_NR(6, 14)
-#define DISP0_BLK_EN   IMX_GPIO_NR(6, 15)
+
+/* D98 has a GPIO controlling the display backlight */
+#define DISP0_BKL_EN   IMX_GPIO_NR(6, 15)
 
 #define KEY_VOL_UP	IMX_GPIO_NR(1, 4)
+
+/* D98 has a GPIO for resetting it's USB hub IC */
+#define USB_HUB_RST IMX_GPIO_NR(6, 8)
+
+static iomux_v3_cfg_t const usb_hub_rst_pads[] = {
+	IOMUX_PADS(PAD_NANDF_ALE__GPIO6_IO08 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
+void d98_usb_hub_reset(void)
+{
+	SETUP_IOMUX_PADS(usb_hub_rst_pads);
+	gpio_request(USB_HUB_RST, "USB HUB Reset");
+	gpio_direction_output(USB_HUB_RST , 1);
+	mdelay(5);
+	gpio_set_value(USB_HUB_RST, 0);
+}
 
 int dram_init(void)
 {
@@ -149,9 +167,9 @@ static void enable_backlight(void)
 {
 	SETUP_IOMUX_PADS(bl_pads);
 	gpio_request(DISP0_PWR_EN, "Display Power Enable");
-	gpio_request(DISP0_BLK_EN, "Display Backlight Power Enable");
+	gpio_request(DISP0_BKL_EN, "Display Backlight Power Enable");
 	gpio_direction_output(DISP0_PWR_EN, 1);
-	gpio_direction_output(DISP0_BLK_EN, 1);
+	gpio_direction_output(DISP0_BKL_EN, 1);
 }
 
 static void enable_rgb(struct display_info_t const *dev)
@@ -337,21 +355,21 @@ static void do_enable_hdmi(struct display_info_t const *dev)
 struct display_info_t const displays[] = {{
 	.bus	= -1,
 	.addr	= 0,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
+	.pixfmt	= IPU_PIX_FMT_RGB24,
 	.detect	= NULL,
 	.enable	= enable_lvds,
 	.mode	= {
-		.name           = "Hannstar-XGA",
+		.name           = "SOLOMON7",
 		.refresh        = 60,
 		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15384,
-		.left_margin    = 160,
-		.right_margin   = 24,
-		.upper_margin   = 29,
-		.lower_margin   = 3,
-		.hsync_len      = 136,
-		.vsync_len      = 6,
+		.yres           = 600,
+		.pixclock       = 14880,
+		.left_margin    = 150,
+		.right_margin   = 150,
+		.upper_margin   = 60,
+		.lower_margin   = 60,
+		.hsync_len      = 76,
+		.vsync_len      = 80,
 		.sync           = FB_SYNC_EXT,
 		.vmode          = FB_VMODE_NONINTERLACED
 } }, {
@@ -440,8 +458,10 @@ static void setup_display(void)
 	     | IOMUXC_GPR2_DATA_WIDTH_CH1_18BIT
 	     | IOMUXC_GPR2_BIT_MAPPING_CH0_SPWG
 	     | IOMUXC_GPR2_DATA_WIDTH_CH0_18BIT
-	     | IOMUXC_GPR2_LVDS_CH0_MODE_DISABLED
-	     | IOMUXC_GPR2_LVDS_CH1_MODE_ENABLED_DI0;
+	     /* D98 only has single channel LVDS, so CH1 is disabled.
+	      * Mux the IPU's (Image PRoocessing Unit) DI0 (Display Interface 0) output */
+	     | IOMUXC_GPR2_LVDS_CH0_MODE_ENABLED_DI0
+	     | IOMUXC_GPR2_LVDS_CH1_MODE_DISABLED;
 	writel(reg, &iomux->gpr[2]);
 
 	reg = readl(&iomux->gpr[3]);
@@ -499,6 +519,9 @@ int board_init(void)
 #ifdef CONFIG_USB_EHCI_MX6
 	setup_usb();
 #endif
+
+	/* D98 has a GPIO to reset the USB hub on each boot */
+	d98_usb_hub_reset();
 
 	return 0;
 }
