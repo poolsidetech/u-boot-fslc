@@ -94,8 +94,8 @@
 			"run video_args_${v}; " \
 			"setexpr fb $fb + 1; " \
 		"done\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=PARTUUID=${uuid} rootwait rw " \
+	"mmcargs=setenv bootargs " \
+		"root=PARTUUID=${uuid} fec.disable_giga=1 rootwait rw " \
 		VIDEO_ARGS "\0" \
 	"loadbootscript=" \
 		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
@@ -207,5 +207,10 @@
 #define CONFIG_IMX_VIDEO_SKIP
 
 #define CONFIG_USBD_HS
+
+/* See: https://stackoverflow.com/questions/34356844/how-to-disable-serial-consolenon-kernel-in-u-boot */
+#define CONFIG_DISABLE_CONSOLE
+#define CONFIG_SILENT_CONSOLE
+#define CONFIG_SYS_DEVICE_NULLDEV
 
 #endif                         /* __MX6QSABRE_COMMON_CONFIG_H */

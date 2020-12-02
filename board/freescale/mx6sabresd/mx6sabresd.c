@@ -237,7 +237,7 @@ struct fsl_esdhc_cfg usdhc_cfg[3] = {
 	/* D98 does not have a USDHC4 */
 };
 
-#define USDHC2_CD_GPIO	IMX_GPIO_NR(2, 2)
+#define USDHC2_CD_GPIO	IMX_GPIO_NR(3, 22)
 /*
  * D98 USDHC3 is eMMC, so there is no Card-Detect (CD) GPIO
  */
@@ -245,7 +245,7 @@ struct fsl_esdhc_cfg usdhc_cfg[3] = {
 
 int board_mmc_get_env_dev(int devno)
 {
-	return devno - 1;
+	return devno;
 }
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -496,7 +496,9 @@ static void setup_usb(void)
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
-
+	/* No serial console AT ALL */
+	/* See: https://stackoverflow.com/questions/34356844/how-to-disable-serial-consolenon-kernel-in-u-boot */
+	gd->flags |= (GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE);
 	return 0;
 }
 
