@@ -498,8 +498,7 @@ int board_early_init_f(void)
 	setup_iomux_uart();
 	/* No serial console AT ALL */
 	/* See: https://stackoverflow.com/questions/34356844/how-to-disable-serial-consolenon-kernel-in-u-boot */
-	/* XTIAN DO NOT COMMIT THIS! */
-	/* gd->flags |= (GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE); */
+	gd->flags |= (GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE);
 	return 0;
 }
 
@@ -575,9 +574,6 @@ static const struct boot_mode board_boot_modes[] = {
 	{NULL,	 0},
 };
 #endif
-
-// XTIAN HACK ALERT!
-//static int mmc_get_boot_dev(void);
 
 int board_late_init(void)
 {

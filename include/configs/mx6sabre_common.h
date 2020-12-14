@@ -66,7 +66,6 @@
 	"initrd_high=0xffffffff\0" \
 	"splashimage=" __stringify(CONFIG_LOADADDR) "\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
-	"mmcpart=1\0" \
 	"desired_boot_part_num=2\0" \
 	"last_good_boot_part_num=2\0" \
 	"trying_to_boot_part_num=0\0" \
@@ -111,11 +110,11 @@
 		"root=PARTUUID=${uuid} fec.disable_giga=1 rootwait rw " \
 		VIDEO_ARGS "\0" \
 	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+		"fatload mmc ${mmcdev}:${desired_boot_part_num} ${loadaddr} ${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+	"loadimage=ext4load mmc ${mmcdev}:${desired_boot_part_num} ${loadaddr} /boot/${image}\0" \
+	"loadfdt=ext4load mmc ${mmcdev}:${desired_boot_part_num} ${fdt_addr} /boot/${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
 		"run detectnewos; " \
 		"run finduuid; " \
@@ -223,10 +222,8 @@
 #define CONFIG_USBD_HS
 
 /* See: https://stackoverflow.com/questions/34356844/how-to-disable-serial-consolenon-kernel-in-u-boot */
-/* XTIAN: do not commit this!
 #define CONFIG_DISABLE_CONSOLE
 #define CONFIG_SILENT_CONSOLE
 #define CONFIG_SYS_DEVICE_NULLDEV
-*/
 
 #endif                         /* __MX6QSABRE_COMMON_CONFIG_H */
