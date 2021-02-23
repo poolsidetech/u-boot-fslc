@@ -498,7 +498,8 @@ int board_early_init_f(void)
 	setup_iomux_uart();
 	/* No serial console AT ALL */
 	/* See: https://stackoverflow.com/questions/34356844/how-to-disable-serial-consolenon-kernel-in-u-boot */
-	gd->flags |= (GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE);
+	/* poolside-serial-console */
+	/* gd->flags |= (GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE); */
 	return 0;
 }
 
@@ -593,7 +594,7 @@ int board_late_init(void)
 		env_set("board_rev", "MX6DL");
 #endif
 
-	puts("XDOG!\n");
+	puts("XDOG1!\n");
 	env_set_ulong("mmcdev", mmc_get_boot_dev());
 
 	return 0;

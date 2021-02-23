@@ -50,6 +50,7 @@
 		"setenv video_interfaces lvds hdmi; " \
 	"fi;"
 
+/* poolside-serial-console add/remove console in mmcargs below */
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"script=boot.scr\0" \
 	"image=zImage\0" \
@@ -106,7 +107,7 @@
 			"run video_args_${v}; " \
 			"setexpr fb $fb + 1; " \
 		"done\0" \
-	"mmcargs=setenv bootargs " \
+	"mmcargs=setenv bootargs console=${console},${baudrate} " \
 		"root=PARTUUID=${uuid} fec.disable_giga=1 rootwait rw " \
 		VIDEO_ARGS "\0" \
 	"loadbootscript=" \
@@ -222,8 +223,10 @@
 #define CONFIG_USBD_HS
 
 /* See: https://stackoverflow.com/questions/34356844/how-to-disable-serial-consolenon-kernel-in-u-boot */
+/* poolside-serial-console
 #define CONFIG_DISABLE_CONSOLE
 #define CONFIG_SILENT_CONSOLE
 #define CONFIG_SYS_DEVICE_NULLDEV
+*/
 
 #endif                         /* __MX6QSABRE_COMMON_CONFIG_H */
