@@ -577,6 +577,7 @@ static const struct boot_mode board_boot_modes[] = {
 
 int board_late_init(void)
 {
+
 #ifdef CONFIG_CMD_BMODE
 	add_board_boot_modes(board_boot_modes);
 #endif
@@ -592,12 +593,15 @@ int board_late_init(void)
 		env_set("board_rev", "MX6DL");
 #endif
 
+	puts("XDOG!\n");
+	env_set_ulong("mmcdev", mmc_get_boot_dev());
+
 	return 0;
 }
 
 int checkboard(void)
 {
-	puts("Board: MX6-SabreSD\n");
+	puts("Board: D98\n");
 	return 0;
 }
 

@@ -66,8 +66,20 @@
 	"initrd_high=0xffffffff\0" \
 	"splashimage=" __stringify(CONFIG_LOADADDR) "\0" \
 	"mmcdev=" __stringify(CONFIG_SYS_MMC_ENV_DEV) "\0" \
-	"mmcpart=1\0" \
-	"finduuid=part uuid mmc ${mmcdev}:2 uuid\0" \
+	"desired_boot_part_num=2\0" \
+	"last_good_boot_part_num=2\0" \
+	"trying_to_boot_part_num=0\0" \
+	"detectnewos=" \
+		"if test ${desired_boot_part_num} != ${last_good_boot_part_num}; then " \
+			"if test ${trying_to_boot_part_num} = ${desired_boot_part_num}; then " \
+				"echo WARN: Failed boot of new OS detected. reverting. ; " \
+				"setenv desired_boot_part_num ${last_good_boot_part_num}; " \
+			"else " \
+				"echo New OS detected. let us try it. ; " \
+				"setenv trying_to_boot_part_num ${desired_boot_part_num}; " \
+			"fi; " \
+		"fi\0" \
+	"finduuid=part uuid mmc ${mmcdev}:${desired_boot_part_num} uuid\0" \
 	"update_sd_firmware=" \
 		"if test ${ip_dyn} = yes; then " \
 			"setenv get_cmd dhcp; " \
@@ -98,12 +110,13 @@
 		"root=PARTUUID=${uuid} fec.disable_giga=1 rootwait rw " \
 		VIDEO_ARGS "\0" \
 	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
+		"fatload mmc ${mmcdev}:${desired_boot_part_num} ${loadaddr} ${script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
-	"loadimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${image}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}\0" \
+	"loadimage=ext4load mmc ${mmcdev}:${desired_boot_part_num} ${loadaddr} /boot/${image}\0" \
+	"loadfdt=ext4load mmc ${mmcdev}:${desired_boot_part_num} ${fdt_addr} /boot/${fdtfile}\0" \
 	"mmcboot=echo Booting from mmc ...; " \
+		"run detectnewos; " \
 		"run finduuid; " \
 		VIDEO_ARGS_SCRIPT \
 		"run mmcargs; " \
