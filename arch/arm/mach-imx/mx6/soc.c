@@ -501,7 +501,7 @@ __weak int board_mmc_get_env_dev(int devno)
 	return CONFIG_SYS_MMC_ENV_DEV;
 }
 
-static int mmc_get_boot_dev(void)
+int mmc_get_boot_dev(void)
 {
 	u32 soc_sbmr = imx6_src_get_boot_mode();
 	u32 bootsel;
