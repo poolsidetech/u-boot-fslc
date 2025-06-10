@@ -52,6 +52,7 @@
 	"fdt_addr=0x18000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
+	"silent=0\0" \
 	"console=" CONSOLE_DEV "\0" \
 	"dfuspi=dfu 0 sf 0:0:10000000:0\0" \
 	"dfu_alt_info_spl=spl raw 0x400\0" \
@@ -179,11 +180,5 @@
 #define CFG_SYS_INIT_RAM_SIZE       IRAM_SIZE
 
 /* Environment organization */
-
-/* poolside-serial-console: uncomment the following three lines to disable serial console
- * See: https://stackoverflow.com/questions/34356844/how-to-disable-serial-consolenon-kernel-in-u-boot */
-#define CONFIG_DISABLE_CONSOLE
-#define CONFIG_SILENT_CONSOLE
-#define CONFIG_SYS_DEVICE_NULLDEV
 
 #endif                         /* __MX6QSABRE_COMMON_CONFIG_H */

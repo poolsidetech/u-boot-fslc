@@ -153,6 +153,14 @@ static iomux_v3_cfg_t const bl_pads[] = {
 	IOMUX_PADS(PAD_NANDF_CS2__GPIO6_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL)), // LCD_BKL_EN
 };
 
+/* MCU Reset/Update pads */
+static iomux_v3_cfg_t const mcu_pads[] = {
+	IOMUX_PADS(PAD_GPIO_0__GPIO1_IO00 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_GPIO_1__GPIO1_IO01| MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_GPIO_16__GPIO7_IO11 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+	IOMUX_PADS(PAD_GPIO_2__GPIO1_IO02 | MUX_PAD_CTRL(NO_PAD_CTRL)),
+};
+
 static void enable_backlight(void)
 {
 	SETUP_IOMUX_PADS(bl_pads);
@@ -187,6 +195,11 @@ iomux_v3_cfg_t const di0_pads[] = {
 static void setup_iomux_uart(void)
 {
 	SETUP_IOMUX_PADS(uart1_pads);
+}
+
+static void setup_iomux_mcu(void)
+{
+	SETUP_IOMUX_PADS(mcu_pads);
 }
 
 #ifdef CONFIG_FSL_ESDHC_IMX
@@ -421,10 +434,18 @@ static void setup_usb(void)
 
 int board_early_init_f(void)
 {
+	// Configure all MCU update/reset pins as outputs and set them low
+	setup_iomux_mcu();
+	gpio_direction_output(IMX_GPIO_NR(1, 0), 0);
+	gpio_direction_output(IMX_GPIO_NR(1, 1), 0);
+	gpio_direction_output(IMX_GPIO_NR(1, 2), 0);
+	gpio_direction_output(IMX_GPIO_NR(7, 11), 0);
+
 	setup_iomux_uart();
 	/* poolside-serial-console: uncomment the following line to disable serial console*/
 	/* See: https://stackoverflow.com/questions/34356844/how-to-disable-serial-consolenon-kernel-in-u-boot */
 	gd->flags |= (GD_FLG_SILENT | GD_FLG_DISABLE_CONSOLE);
+
 	return 0;
 }
 
@@ -519,7 +540,7 @@ int board_late_init(void)
 #endif
     ulong poolside_boot_dev = mmc_get_boot_dev() - 1;
     env_set_ulong("mmcdev", poolside_boot_dev);
-    puts("Poolside D98 Starting Up!\n");
+    puts("Poolside D98 Starting 03!\n");
 
 	return 0;
 }

@@ -134,3 +134,7 @@ CONFIG_SPLASH_SCREEN=y
 CONFIG_SPLASH_SCREEN_ALIGN=y
 CONFIG_BMP_16BPP=y
 CONFIG_IMX_WATCHDOG=y
+# poolside-serial-console: comment the following line and unset env variable 'silent' to enable serial console
+CONFIG_DISABLE_CONSOLE=y
+CONFIG_SILENT_CONSOLE=y
+CONFIG_SYS_DEVICE_NULLDEV=y
